@@ -1,0 +1,58 @@
+---
+title: "Overall community trends - first pass"
+output: html_notebook
+---
+
+First test of overall community trends.
+Started 5/2/24
+
+To do:
+- top taxa
+- prevalence filtered abundances? correlation matrix?
+
+```{r}
+library(tidyverse)
+library(Hmisc)
+```
+
+
+
+```{r}
+# data read in
+ps_rel_list <- readRDS("./data/ps_rel_list.RDS")
+
+table_rel <- ps_rel_list[["ab"]] %>%
+  pivot_longer(cols = !seq, names_to = "sample", values_to = "ab") %>%
+  left_join(ps_rel_list[["tax"]], join_by(seq)) %>%
+  left_join(ps_rel_list[["meta"]], join_by(sample)) %>%
+  mutate(date = mdy(date)) %>%
+  filter(!str_detect(Genus, "midas_g_")) %>%
+  filter(!is.na(Genus))
+
+
+```
+
+
+```{r}
+# prevalence filter - >0 in at least 20 samples
+filter_20 <- table_rel %>% 
+  group_by(Genus, sample) %>% 
+  summarise(sum_ab = sum(ab)) %>%
+  ungroup() %>% group_by(Genus) %>%
+  summarise(counts = sum(sum_ab > 0, na.rm = TRUE), mean = mean(sum_ab)) %>%
+  filter(counts >= 20 & mean >= 1)
+
+
+table_rel %>% filter(Genus %in% filter_20$Genus) %>%
+  ggplot(., aes(x = date, y = ab, fill = Genus)) +
+  geom_bar(stat = "identity") +
+  theme(legend.position = "bottom")
+
+```
+
+
+
+
+
+
+
