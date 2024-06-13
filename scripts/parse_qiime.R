@@ -7,7 +7,7 @@ library(qiime2R)
 library(phyloseq)
 library(tibble)
 
-onedrive_path <- "~/OneDrive - Northwestern University/Project folders/cando 16S/qiime"
+onedrive_path <- "~/OneDrive - Northwestern University/Project folders/CANDO 16S/qiime"
 
 ps <- qiime2R::qza_to_phyloseq(
   features = file.path(onedrive_path, "table_deblur.qza"),
@@ -46,5 +46,5 @@ split_phyloseq <- function(phyloseq_obj, list_name){
 
 split_phyloseq(ps_rel, "ps_rel_list")
 
-saveRDS(ps_rel_list, file = "./data/ps_rel_list.RDS")
+saveRDS(ps_rel_list, file = "~/OneDrive - Northwestern University/Project folders/CANDO 16S/parsed data/ps_rel_list.RDS")
 
