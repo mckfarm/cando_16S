@@ -1,0 +1,78 @@
+
+
+```{r}
+library(tidyverse)
+library(rstatix)
+```
+
+```{r}
+ps_rel_list <- readRDS("./data/ps_rel_list.RDS")
+
+table_rel <- ps_rel_list[["ab"]] %>%
+  pivot_longer(cols = !seq, names_to = "sample", values_to = "ab") %>%
+  left_join(ps_rel_list[["tax"]], join_by(seq)) %>%
+  left_join(ps_rel_list[["meta"]], join_by(sample)) %>%
+  mutate(date = mdy(date)) %>%
+  filter(!is.na(Genus))
+
+```
+
+
+# Correlation matrices
+```{r}
+
+
+```
+
+
+```{r}
+
+corr_genus_against_all <- function(genus, wide_table){
+  df_tmp <- wide_table %>%
+    cor_test(paste(genus), method = "spearman") %>%
+    filter(p <= 0.05)
+  
+}
+
+table_wide <- table_rel %>%
+  select(date, Genus, ab) %>%
+  group_by(date, Genus) %>%
+  summarise(sum_ab = sum(ab)) %>%
+  pivot_wider(id_cols = date, names_from = Genus, values_from = sum_ab) %>%
+  column_to_rownames("date")
+
+columns_pass <- which(colSums(table_wide != 0) >= 37/2)
+
+table_wide_filt <- table_wide[, columns_pass]
+
+list_corr_pao_gao <- c("Ca_Accumulibacter", "Ca_Competibacter", "Ca_Phosphoribacter")
+
+corr_list <- list() 
+corr_list <- lapply(list_corr_pao_gao, FUN = corr_genus_against_all, wide_table = table_wide_filt)
+names(corr_list) <- list_corr_pao_gao
+
+
+```
+
+
+# PAO and GAO plots by time
+```{r}
+
+list_plot_pao_gao <- c("Ca_Accumulibacter", "Ca_Competibacter", "Ca_Phosphoribacter", "Tetrasphaera", "Azonexus", "Plasticicumulans",
+                       "Propionivibrio", "Defluviicoccus")
+
+table_rel %>%
+  filter(Genus %in% list_plot_pao_gao) %>%
+  select(date, Genus, ab) %>%
+  group_by(date, Genus) %>%
+  summarise(sum_ab = sum(ab)) %>%
+  ggplot(., aes(x = date, y = sum_ab)) +
+  facet_wrap(~Genus, scales = "free") +
+  geom_point()
+
+
+```
+
+
+
+
