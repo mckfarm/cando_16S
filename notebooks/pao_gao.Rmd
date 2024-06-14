@@ -4,7 +4,8 @@
 library(tidyverse)
 library(rstatix)
 
-onedrive_path <- "~/OneDrive - Northwestern University/Project folders/CANDO 16S/"
+# onedrive_path <- "~/OneDrive - Northwestern University/Project folders/CANDO 16S/"
+onedrive_path <- "C:/Users/mckyf/OneDrive - Northwestern University/Project folders/CANDO 16S/"
 
 weird_period <- data.frame(x1 = 170, x2 = 465)
 ```
@@ -37,8 +38,12 @@ table_rel <- table_rel %>%
 table_rel %>%
   filter(Genus == "Azonexus") %>%
   ggplot(., aes(x = day, y = ab, color = Species)) +
+  geom_rect(aes(xmin = weird_period$x1, xmax = weird_period$x2, ymin = 0, ymax = Inf), 
+              fill = "lemonchiffon1", color = "lemonchiffon1") + 
+  geom_vline(xintercept = 512) +
   geom_point() + 
-  geom_line()
+  geom_line() +
+  theme_classic()
 
 ```
 # PAO and GAO plots by time
@@ -56,11 +61,32 @@ table_rel %>%
   facet_wrap(~Genus, scales = "free") +
   geom_rect(aes(xmin = weird_period$x1, xmax = weird_period$x2, ymin = 0, ymax = Inf), 
               fill = "lemonchiffon1", color = "lemonchiffon1") +
+  geom_vline(xintercept = 484) +
   geom_point() +
   theme_classic()
 
 
 ```
+
+```{r}
+
+list_plot_pao_gao <- c("Ca_Accumulibacter", "Ca_Competibacter", "Defluviicoccus")
+
+table_rel %>%
+  filter(Genus %in% list_plot_pao_gao) %>%
+  ggplot(., aes(x = day, y = ab, color = seq)) +
+  facet_wrap(~Genus, scales = "free") +
+  geom_rect(aes(xmin = weird_period$x1, xmax = weird_period$x2, ymin = 0, ymax = Inf), 
+              fill = "lemonchiffon1", color = "lemonchiffon1") +
+  geom_vline(xintercept = 484) +
+  geom_point() + 
+  geom_line() + 
+  theme_classic() +
+  theme(legend.position = "none")
+
+```
+
+
 
 # Correlation matrices
 
