@@ -36,7 +36,8 @@ split_phyloseq <- function(phyloseq_obj, list_name){
   
   meta <- as(sample_data(phyloseq_obj), "matrix")
   meta <- as.data.frame(meta) %>%
-    rownames_to_column(var = "sample")
+    rownames_to_column(var = "sample") %>%
+    mutate(day = as.numeric(day))
   
   ls[["meta"]] <- meta
   

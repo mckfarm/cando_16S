@@ -1,0 +1,32 @@
+Alpha and beta diversity visuals
+
+
+```{r}
+library(qiime2R)
+library(phyloseq)
+library(tidyverse)
+
+onedrive_path <- "~/OneDrive - Northwestern University/Project folders/CANDO 16S/qiime"
+
+ps <- qiime2R::qza_to_phyloseq(
+  features = file.path(onedrive_path, "table_deblur.qza"),
+  taxonomy = file.path(onedrive_path, "taxonomy.qza"),
+  tree = file.path(onedrive_path, "rooted_tree.qza"),
+  metadata = file.path(onedrive_path, "metadata.tsv")
+)
+```
+
+
+
+```{r}
+ps_rare <- rarefy_even_depth(ps, sample.size = min(sample_sums(ps)))
+
+alpha_chao <- plot_richness(ps_rare, measures = "Chao1", x = "day")$data
+
+ggplot(alpha_chao, aes(x = day, y = value)) +
+  geom_pointrange(aes(ymin = value - se, ymax = value + se)) +
+  labs(x = "Day", y = "Chao1 index", title = "Alpha diversity - Chao1") +
+  theme_classic()
+
+```
+

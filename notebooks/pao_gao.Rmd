@@ -3,10 +3,14 @@
 ```{r}
 library(tidyverse)
 library(rstatix)
+
+onedrive_path <- "~/OneDrive - Northwestern University/Project folders/CANDO 16S/"
+
+weird_period <- data.frame(x1 = 170, x2 = 465)
 ```
 
 ```{r}
-ps_rel_list <- readRDS("./data/ps_rel_list.RDS")
+ps_rel_list <- readRDS(file.path(onedrive_path, "./parsed data/ps_rel_list.RDS"))
 
 table_rel <- ps_rel_list[["ab"]] %>%
   pivot_longer(cols = !seq, names_to = "sample", values_to = "ab") %>%
@@ -17,13 +21,48 @@ table_rel <- ps_rel_list[["ab"]] %>%
 
 ```
 
-
-# Correlation matrices
+# Dechloromonas check
 ```{r}
+dechloro_blast <- readRDS(file.path(onedrive_path, "./parsed data/dechloro_blast.RDS")) %>%
+  filter(!str_detect(Species, "midas_s")) %>%
+  select(query, Species)
+
+# manual rename, cant figure out automated way lol 
+table_rel <- table_rel %>%
+  mutate(Species = case_when(seq == "e9c834248ac7a70892628dea785c1c92" ~ "Azonexus_phosphoritropha",
+                             seq == "9372a32bd76e3ad14b37c40d7d43c4cc" ~ "Azonexus_agitata",
+                             seq == "c7500c4281b7f60cc4ffa07b17485bf9" ~ "Azonexus_hortensis",
+                             .default = Species))
+
+table_rel %>%
+  filter(Genus == "Azonexus") %>%
+  ggplot(., aes(x = day, y = ab, color = Species)) +
+  geom_point() + 
+  geom_line()
+
+```
+# PAO and GAO plots by time
+```{r}
+
+list_plot_pao_gao <- c("Ca_Accumulibacter", "Ca_Competibacter", "Ca_Phosphoribacter", "Tetrasphaera",
+                       "Defluviicoccus", "Azonexus")
+
+table_rel %>%
+  filter(Genus %in% list_plot_pao_gao) %>%
+  select(day, Genus, ab) %>%
+  group_by(day, Genus) %>%
+  summarise(sum_ab = sum(ab)) %>%
+  ggplot(., aes(x = day, y = sum_ab)) +
+  facet_wrap(~Genus, scales = "free") +
+  geom_rect(aes(xmin = weird_period$x1, xmax = weird_period$x2, ymin = 0, ymax = Inf), 
+              fill = "lemonchiffon1", color = "lemonchiffon1") +
+  geom_point() +
+  theme_classic()
 
 
 ```
 
+# Correlation matrices
 
 ```{r}
 
@@ -55,23 +94,7 @@ names(corr_list) <- list_corr_pao_gao
 ```
 
 
-# PAO and GAO plots by time
-```{r}
 
-list_plot_pao_gao <- c("Ca_Accumulibacter", "Ca_Competibacter", "Ca_Phosphoribacter", "Tetrasphaera", "Azonexus", "Plasticicumulans",
-                       "Propionivibrio", "Defluviicoccus")
-
-table_rel %>%
-  filter(Genus %in% list_plot_pao_gao) %>%
-  select(date, Genus, ab) %>%
-  group_by(date, Genus) %>%
-  summarise(sum_ab = sum(ab)) %>%
-  ggplot(., aes(x = date, y = sum_ab)) +
-  facet_wrap(~Genus, scales = "free") +
-  geom_point()
-
-
-```
 
 
 
